@@ -3,19 +3,27 @@ var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    password: '',
-    database: 'great_bayDB'
+    password: '1234qwer',
+    database: "great_bayDB"
 })
+
 
 connection.connect(function(err){
     if(err)
     {
+        console.log("connection failed");
         throw err;       
     }
-    console.log("connected")
+    else{
+        console.log("connected");
+    }
+    
   })
 
+
 var inquirer = require("inquirer");
+
+
 inquirer
   .prompt([
     {
@@ -34,15 +42,15 @@ inquirer
             inquirer
             .prompt([
                 {
-                type: "input",
-                message: "Item name here",
-                name: "item"
+                    type: "input",
+                    message: "Item name here",
+                    name: "item"
                 },
 
                 {
-                type: "input",
-                message: "price here",
-                name: "price"
+                    type: "input",
+                    message: "price here",
+                    name: "price"
                 },
 
                 {
@@ -55,46 +63,55 @@ inquirer
                 name = inquirerResponse.item;
                 price = inquirerResponse.price;
                 description = inquirerResponse.description;
+
+                connection.query("INSERT INTO great_bay(name, price, description) VALUES('"+ name + "', '" + price + "', '" + description + "');", function (err, result) {
+                    if (err) throw err;
+                    console.table("Inserted");
+                });
+
             })
 
-            connection.query("INSERT INTO great_bay(name, price, description) VALUES('"+ name + "', '" + price + "', '" + description +"');", function (err, result) {
-                if (err) throw err;
-                console.table(result);
-            });
+            
         }
 
         else if(inquirerResponse.commands === "BID ON AN ITEM")
         {
-            
+            var id = 0;
+            var bid = 0;
             connection.query("SELECT * FROM great_bay", function (err, result) {
                 if (err) throw err;
+                console.log("\r\n");
                 console.table(result);
+
+                inquirer
+                    .prompt([
+                        {
+                            type: "input",
+                            message: "item id",
+                            name: "id"
+                        },
+                        {
+                            type: "input",
+                            message: "bid price",
+                            name: "bid"
+                        }
+                    ])
+                    .then(function(inquirerResponse) {
+                        id = inquirerResponse.id;
+                        bid = inquirerResponse.bid;
+
+                        connection.query(" UPDATE great_bay SET price = " + bid + " WHERE id = " + id + " AND price < " + bid, function (err, result) {
+                            if (err) throw err;
+                            console.table("Updated");
+                        });
+
+                    })
+
             });
 
-            inquirer
-            .prompt([
-                {
-                    type: "input",
-                    message: "item id",
-                    name: "id"
-                },
-                {
-                    type: "input",
-                    message: "bid price",
-                    name: "price"
-                }
-            ])
-            .then(function(inquirerResponse) {
-                
-                
-            })
+            
         }
-
-        
-
-        
-        }
-    
+  
   });
 
  
